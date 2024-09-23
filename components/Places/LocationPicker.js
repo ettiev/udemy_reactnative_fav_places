@@ -1,15 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 // npx expo install expo-location
 import { getCurrentPositionAsync, useForegroundPermissions, PermissionStatus } from "expo-location";
 import { StyleSheet, View, Alert, Text, Image } from "react-native";
+import { useNavigation, useRoute, useIsFocused } from "@react-navigation/native";
 
 import OutlinedButton from "../UI/OutlinedButton";
 import { Colors } from "../../constants/colors";
-import { getMapPreview } from "../../util/location";
+import { getAddress, getMapPreview } from "../../util/location";
 
-
-function LocationPicker() {
+function LocationPicker({ onPickLocation }) {
     const [pickedLocation, setPickedLocation] = useState();
+    const isFocused = useIsFocused();
+    
+    const navigation = useNavigation();
+    const route = useRoute();
+    
+    
+    useEffect(() => {
+        if (isFocused && route.params) {
+            const mapPickedLocations = {lat: route.params.pickedLat, lng: route.params.pickedLng};
+            setPickedLocation(mapPickedLocations);
+        }
+    }, [route, isFocused]);
+
+    useEffect(() => {
+        async function handleLocation() {
+            if (pickedLocation) {
+                const address = await getAddress(pickedLocation.lat, pickedLocation.lng);
+                onPickLocation({...pickedLocation, address: address});    
+            }
+        }
+        handleLocation();
+    }, [pickedLocation, onPickLocation]);
+
     const [locationPermissionInformation, requestPermission] = useForegroundPermissions(); // For Android and iOS
     
     async function verifyPermissions() {  // For Android and iOS
@@ -37,7 +60,7 @@ function LocationPicker() {
     }
 
     function pickOnMapHandler() {
-
+        navigation.navigate('Map');
     }
     
     let locationPreview = <Text>No location available.</Text>
