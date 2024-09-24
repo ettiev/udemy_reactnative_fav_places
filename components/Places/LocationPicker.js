@@ -66,7 +66,6 @@ function LocationPicker({ onPickLocation }) {
     let locationPreview = <Text>No location available.</Text>
     if (pickedLocation) {
         locationUri = getMapPreview(pickedLocation.lat, pickedLocation.lng)
-        console.log(locationUri);
         locationPreview = (
             <Image 
                 style={styles.image}
